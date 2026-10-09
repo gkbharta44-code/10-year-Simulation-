@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Verified-Commerce 10-Year Simulation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f5f6f3;
+    --ink: #1c2430;
+    --muted: #5d6675;
+    --rule: #d6dae0;
+    --panel: #ffffff;
+    --keep: #1f4e79;
+    --subs: #6b7d2f;
+    --lead: #b7791f;
+    --focus: #1f4e79;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #151a22;
+      --ink: #e6e9ee;
+      --muted: #98a1af;
+      --rule: #2b3340;
+      --panel: #1c2330;
+      --keep: #7fb2e5;
+      --subs: #a9c26a;
+      --lead: #e0a84f;
+      --focus: #7fb2e5;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #151a22;
+    --ink: #e6e9ee;
+    --muted: #98a1af;
+    --rule: #2b3340;
+    --panel: #1c2330;
+    --keep: #7fb2e5;
+    --subs: #a9c26a;
+    --lead: #e0a84f;
+    --focus: #7fb2e5;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    padding: env(safe-area-inset-top, 0px) 16px env(safe-area-inset-bottom, 0px);
+  }
+  main { max-width: 1240px; margin: 0 auto; padding: 24px 0 48px; }
+  h1 { font-size: 22px; font-weight: 600; margin: 0 0 4px; }
+  h2 { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
+  .lede { color: var(--muted); margin: 0 0 24px; max-width: 80ch; }
+  .sub { color: var(--muted); font-size: 13px; margin: 0 0 12px; }
+
+  .grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
+  @media (min-width: 960px) { .grid { grid-template-columns: 320px 1fr; align-items: start; } }
+
+  .panel { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 16px; }
+  .panel + .panel { margin-top: 16px; }
+
+  label.field { display: block; margin-bottom: 12px; }
+  label.field > span.name { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  input[type="number"] {
+    width: 100%;
+    font: inherit;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    padding: 8px 10px;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--paper);
+    color: var(--ink);
+  }
+  input:focus-visible, button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .yearfields { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .yearfields .y { font-size: 12px; color: var(--muted); text-align: center; margin-bottom: 2px; }
+  .yearfields input { padding: 6px 4px; text-align: center; }
+  .divider { border: 0; border-top: 1px solid var(--rule); margin: 16px 0; }
+  .check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; margin-top: 8px; }
+  .check input { margin-top: 3px; }
+  .reset {
+    margin-top: 8px; font: inherit; font-size: 14px; padding: 8px 12px;
+    border: 1px solid var(--rule); border-radius: 4px; background: transparent; color: var(--ink); cursor: pointer;
+  }
+  .assume { font-size: 12px; color: var(--muted); margin: 6px 0 0; }
+
+  .summary { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); margin-bottom: 16px; }
+  .stat { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 14px; }
+  .stat .label { font-size: 13px; color: var(--muted); }
+  .stat .value { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 19px; margin-top: 4px; }
+  .stat.keep .value { color: var(--keep); }
+  .stat.subs .value { color: var(--subs); }
+  .stat.lead .value { color: var(--lead); }
+
+  .table-wrap { overflow: auto; margin-top: 12px; border: 1px solid var(--rule); border-radius: 4px; }
+  .table-wrap.tall { max-height: 480px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+  th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+  thead th { position: sticky; top: 0; background: var(--panel); font-weight: 500; color: var(--muted); font-size: 12px; z-index: 1; }
+  td { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+  tr.yearstart td { border-top: 2px solid var(--rule); }
+  .note { font-size: 13px; color: var(--muted); margin-top: 10px; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+  .tab { font: inherit; font-size: 13px; padding: 7px 10px; border: 1px solid var(--rule); border-radius: 4px; background: transparent; color: var(--ink); cursor: pointer; }
+  .tab[aria-selected="true"] { background: var(--keep); border-color: var(--keep); color: var(--paper); }
+  .phase-intro { font-size: 14px; color: var(--muted); margin: 0 0 12px; max-width: 80ch; }
+  .kpis { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 12px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Verified-Commerce 10-Year Simulation</h1>
+  <p class="lede">Years 1 to 5 follow the India pilot: 7.5 million vendors and 7.5 million orders in total. Years 6 to 10 grow vendors from 7.5 million to 3 billion, and orders per vendor per month rise to 1 by year 10, so orders reach 3 billion a month. Renewal opt-outs and seller economics are included. From year 11, vendors hold at the year-10 target. Each year, 10% of vendors opt out at renewal and new vendors replace them, so turnover stays constant.</p>
+
+  <div class="grid">
+    <section class="panel" aria-labelledby="inputs-h">
+      <h2 id="inputs-h">Inputs</h2>
+
+      <label class="field">
+        <span class="name">Pilot year-end active vendors, years 1 to 5 (millions)</span>
+        <div class="yearfields" id="vendorFields"></div>
+      </label>
+      <label class="field"><span class="name">Pilot orders, years 1 to 5 (millions)</span>
+        <input type="number" id="pilotOrders" min="0" step="0.1" value="7.5"></label>
+      <label class="field"><span class="name">Year-10 active vendors (billions)</span>
+        <input type="number" id="targetVendors" min="0" step="0.1" value="3"></label>
+      <label class="field"><span class="name">Year-10 orders per month (billions)</span>
+        <input type="number" id="targetOrders" min="0" step="0.1" value="3"></label>
+      <label class="field"><span class="name">Years to simulate (10 to 30)</span>
+        <input type="number" id="horizon" min="10" max="30" step="1" value="15"></label>
+      <label class="field"><span class="name">Opt-out rate at renewal (%)</span>
+        <input type="number" id="optOut" min="0" max="100" step="1" value="10"></label>
+      <label class="field"><span class="name">Order value (USD)</span>
+        <input type="number" id="orderValue" min="0" step="1" value="300"></label>
+      <label class="field"><span class="name">Lead fee per order (USD)</span>
+        <input type="number" id="leadFee" min="0" step="0.5" value="66"></label>
+      <label class="field"><span class="name">Commission per order (USD)</span>
+        <input type="number" id="commission" min="0" step="0.5" value="6"></label>
+      <label class="field"><span class="name">Annual subscription per vendor (USD)</span>
+        <input type="number" id="subscription" min="0" step="1" value="100"></label>
+      <label class="field"><span class="name">Inspection pass rate (%)</span>
+        <input type="number" id="passRate" min="1" max="100" step="1" value="95"></label>
+      <label class="field"><span class="name">Confirmed by signed BSC (% of delivered)</span>
+        <input type="number" id="bscRate" min="0" max="100" step="1" value="60"></label>
+      <label class="field"><span class="name">Disputed after delivery (% of delivered)</span>
+        <input type="number" id="disputeRate" min="0" max="100" step="1" value="2"></label>
+      <label class="field"><span class="name">Average days from escrow lock to settlement</span>
+        <input type="number" id="daysEscrow" min="0" step="1" value="24"></label>
+      <label class="field"><span class="name">New products per vendor per year</span>
+        <input type="number" id="newProducts" min="0" step="1" value="12"></label>
+      <label class="field"><span class="name">QC fee per new product, paid to SGS (USD)</span>
+        <input type="number" id="qcFee" min="0" step="1" value="15"></label>
+      <label class="field"><span class="name">Seller prepayment per order, 3PQC and logistics (USD)</span>
+        <input type="number" id="prepay" min="0" step="1" value="15"></label>
+      <label class="field"><span class="name">Share set aside for lead generation (%)</span>
+        <input type="number" id="leadShare" min="0" max="100" step="1" value="20"></label>
+      <label class="check">
+        <input type="checkbox" id="applyToSubs">
+        <span>Apply the lead-generation share to subscriptions too</span>
+      </label>
+
+      <button class="reset" id="resetBtn" type="button">Reset to base case</button>
+      <p class="assume">Orders per vendor per month ramp geometrically from the year-5 pilot rate to the year-10 target. Vendors grow geometrically from 7.5M to the year-10 target. Renewal opt-outs apply at the start of each year. Seller net is the order value less the lead fee, commission, and prepayment, minus each vendor's subscription and QC fees paid to SGS. QC fees are a pass-through and do not add to platform revenue.</p>
+    </section>
+
+    <section aria-label="Results">
+      <div class="summary">
+        <div class="stat keep"><div class="label">Kept by platform, all years</div><div class="value" id="sumKept"></div></div>
+        <div class="stat subs"><div class="label">Subscriptions, all years</div><div class="value" id="sumSubs"></div></div>
+        <div class="stat lead"><div class="label">Lead generation, all years</div><div class="value" id="sumLead"></div></div>
+        <div class="stat"><div class="label">Orders per month, final year</div><div class="value" id="sumY10Orders"></div></div>
+      </div>
+
+      <div class="panel">
+        <h2>Year by year</h2>
+        <p class="sub">Vendors in millions or billions. USD in millions, billions, or trillions.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Year</th><th>Year-end vendors</th><th>Avg active vendors</th><th>Opt-outs</th><th>New joins</th>
+                <th>Orders</th><th>Orders per vendor per month</th><th>Order inflow</th>
+                <th>Subscriptions</th><th>Lead generation</th><th>Kept by platform</th><th>QC paid to SGS</th><th>Seller net per vendor per year</th>
+              </tr>
+            </thead>
+            <tbody id="yearRows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Month by month</h2>
+        <p class="sub">Every month in the chosen horizon. Years 11 onward show steady-state turnover.</p>
+        <div class="table-wrap tall">
+          <table>
+            <thead>
+              <tr>
+                <th>Month</th><th>Year</th><th>Active vendors</th><th>Orders</th>
+                <th>Orders per vendor per month</th><th>Order inflow</th><th>Kept by platform</th><th>Seller net per vendor per month</th>
+              </tr>
+            </thead>
+            <tbody id="monthRows"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel" style="margin-top:16px">
+        <h2>Phases, year by year</h2>
+        <p class="sub">Each phase of the process across the full horizon. Totals are in the cards above each table.</p>
+        <div class="tabs" role="tablist" id="ptabs"></div>
+        <h2 id="ptitle"></h2>
+        <p class="phase-intro" id="pintro"></p>
+        <div class="kpis" id="pkpis"></div>
+        <div class="table-wrap tall">
+          <table>
+            <thead><tr id="phead"></tr></thead>
+            <tbody id="pbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+(function () {
+  var BASE = {
+    vendors: [1.5, 3.0, 4.5, 6.0, 7.5],
+    horizon: 15,
+    pilotOrders: 7.5,
+    targetVendors: 3,
+    targetOrders: 3,
+    optOut: 10,
+    orderValue: 300,
+    leadFee: 66,
+    commission: 6,
+    subscription: 100,
+    prepay: 15,
+    leadShare: 20,
+    newProducts: 12,
+    passRate: 95,
+    bscRate: 60,
+    disputeRate: 2,
+    daysEscrow: 24,
+    qcFee: 15,
+    applyToSubs: false
+  };
+
+  var NUMERIC_IDS = ["horizon", "pilotOrders", "targetVendors", "targetOrders", "optOut", "orderValue", "leadFee", "commission", "subscription", "prepay", "leadShare", "newProducts", "qcFee", "passRate", "bscRate", "disputeRate", "daysEscrow"];
+
+  function buildYearFields(values) {
+    var box = document.getElementById("vendorFields");
+    box.innerHTML = "";
+    for (var i = 0; i < 5; i++) {
+      var wrap = document.createElement("div");
+      var y = document.createElement("div");
+      y.className = "y";
+      y.textContent = "Y" + (i + 1);
+      var input = document.createElement("input");
+      input.type = "number";
+      input.min = "0";
+      input.step = "0.1";
+      input.value = values[i];
+      input.id = "vendor" + i;
+      input.setAttribute("aria-label", "Pilot year-end vendors in millions, year " + (i + 1));
+      input.addEventListener("input", update);
+      wrap.appendChild(y);
+      wrap.appendChild(input);
+      box.appendChild(wrap);
+    }
+  }
+
+  function num(id) {
+    var v = parseFloat(document.getElementById(id).value);
+    return isNaN(v) || v < 0 ? 0 : v;
+  }
+
+  function readInputs() {
+    var pilotVendors = [];
+    for (var i = 0; i < 5; i++) pilotVendors.push(num("vendor" + i) * 1e6);
+    return {
+      pilotVendors: pilotVendors,
+      horizon: Math.min(Math.max(Math.round(num("horizon")), 10), 30),
+      pilotOrders: num("pilotOrders") * 1e6,
+      targetVendors: num("targetVendors") * 1e9,
+      targetOrders: num("targetOrders") * 1e9,
+      opt: Math.min(num("optOut") / 100, 1),
+      orderValue: num("orderValue"),
+      leadFee: num("leadFee"),
+      commission: num("commission"),
+      subscription: num("subscription"),
+      prepay: num("prepay"),
+      newProducts: num("newProducts"),
+      pass: Math.min(Math.max(num("passRate") / 100, 0.01), 1),
+      bsc: Math.min(num("bscRate") / 100, 1),
+      disp: Math.min(num("disputeRate") / 100, 1 - Math.min(num("bscRate") / 100, 1)),
+      daysEscrow: num("daysEscrow"),
+      qcFee: num("qcFee"),
+      share: Math.min(num("leadShare"), 100) / 100,
+      applyToSubs: document.getElementById("applyToSubs").checked
+    };
+  }
+
+  // Build 10 years of vendors, orders, and money, month by month.
+  function compute(p) {
+    var years = [];
+    var prevEnd = 0;
+
+    // Year-end vendor path: pilot for years 1-5, geometric growth to target in years 6-10.
+    var E5 = p.pilotVendors[4];
+    var endVendors = [];
+    for (var y = 0; y < p.horizon; y++) {
+      if (y < 5) endVendors.push(p.pilotVendors[y]);
+      else if (y < 10) endVendors.push(E5 * Math.pow(p.targetVendors / E5, (y - 4) / 5));
+      else endVendors.push(p.targetVendors);
+    }
+
+    // Pilot orders: total fixed, spread by active vendor-months (years 1-5).
+    var pilotAvg = [];
+    var pilotPrev = 0;
+    var pilotTotalAvg = 0;
+    for (var py = 0; py < 5; py++) {
+      var PE = endVendors[py];
+      var pBase = pilotPrev - pilotPrev * p.opt;
+      var pJoins = Math.max(PE - pBase, 0);
+      var pSum = 0;
+      for (var pk = 1; pk <= 12; pk++) pSum += pBase + pJoins * pk / 12;
+      pilotAvg.push(pSum / 12);
+      pilotTotalAvg += pSum / 12;
+      pilotPrev = PE;
+    }
+    var pilotOrdersByYear = [];
+    for (var pi = 0; pi < 5; pi++) pilotOrdersByYear.push(pilotTotalAvg > 0 ? p.pilotOrders * pilotAvg[pi] / pilotTotalAvg : 0);
+    var r5 = pilotOrdersByYear[4] / (12 * pilotAvg[4]);
+    var rEnd = p.targetOrders / p.targetVendors;
+
+    var months = [];
+    for (var yy = 0; yy < p.horizon; yy++) {
+      var E = endVendors[yy];
+      var opening = prevEnd;
+      var optOuts = opening * p.opt;
+      var base = opening - optOuts;
+      var joins = Math.max(E - base, 0);
+
+      var active = [], sumActive = 0;
+      for (var k = 1; k <= 12; k++) {
+        var a = base + joins * k / 12;
+        active.push(a);
+        sumActive += a;
+      }
+      var avgActive = sumActive / 12;
+
+      var yr = {
+        year: yy + 1, opening: opening, optOuts: optOuts, joins: joins, end: E,
+        avg: avgActive, orders: 0, inflow: 0, subs: 0, lead: 0, kept: 0,
+        sellerNet: 0, rateSum: 0, qc: 0
+      };
+
+      for (var j = 0; j < 12; j++) {
+        var M = yy * 12 + j + 1;
+        var orders;
+        if (yy < 5) {
+          var w = sumActive > 0 ? active[j] / sumActive : 1 / 12;
+          orders = pilotOrdersByYear[yy] * w;
+        } else {
+          var rate = M >= 120 ? rEnd : r5 * Math.pow(rEnd / r5, (M - 60) / 60);
+          orders = active[j] * rate;
+        }
+        var inflow = orders * (p.leadFee + p.commission);
+        var subs = active[j] * p.subscription / 12;
+        var lead = inflow * p.share + (p.applyToSubs ? subs * p.share : 0);
+        var kept = inflow + subs - lead;
+        var qcM = active[j] * p.newProducts / 12 * p.qcFee;
+        var sellerNetM = orders * (p.orderValue - p.leadFee - p.commission - p.prepay) - subs - qcM;
+
+        yr.orders += orders;
+        yr.inflow += inflow;
+        yr.subs += subs;
+        yr.lead += lead;
+        yr.kept += kept;
+        yr.sellerNet += sellerNetM;
+        yr.qc += qcM;
+        yr.rateSum += active[j] > 0 ? orders / active[j] : 0;
+
+        months.push({
+          month: M, year: yy + 1, active: active[j], orders: orders,
+          rate: active[j] > 0 ? orders / active[j] : 0,
+          inflow: inflow, kept: kept, sellerNetPerVendor: active[j] > 0 ? sellerNetM / active[j] : 0
+        });
+      }
+
+      yr.intents = yr.orders / p.pass;
+      yr.failed = yr.intents - yr.orders;
+      yr.bscCount = yr.orders * p.bsc;
+      yr.disputed = yr.orders * p.disp;
+      yr.deemed = yr.orders - yr.bscCount - yr.disputed;
+      yr.refunds = yr.failed * p.orderValue;
+      yr.lockValue = yr.intents * p.orderValue;
+      yr.prepayments = yr.intents * p.prepay;
+      yr.escrowBalance = yr.orders * p.orderValue * p.daysEscrow / 365;
+      yr.sellerPayout = yr.orders * (p.orderValue - p.leadFee - p.commission);
+      yr.keptOrders = yr.inflow * (1 - p.share);
+      yr.avgRate = yr.rateSum / 12;
+      yr.sellerNetPerVendorYear = avgActive > 0 ? yr.sellerNet / avgActive : 0;
+      years.push(yr);
+      prevEnd = E;
+    }
+    return { years: years, months: months };
+  }
+
+  function sumKey(arr, key) {
+    var t = 0;
+    for (var i = 0; i < arr.length; i++) t += arr[i][key];
+    return t;
+  }
+
+  function fmtCount(x) {
+    if (x >= 1e9) return (x / 1e9).toFixed(2) + "B";
+    if (x >= 1e6) return (x / 1e6).toFixed(2) + "M";
+    if (x >= 1e3) return (x / 1e3).toFixed(1) + "K";
+    return Math.round(x).toString();
+  }
+
+  function fmtUSD(x) {
+    var neg = x < 0 ? "-" : "";
+    var a = Math.abs(x);
+    if (a >= 1e12) return neg + "USD " + (a / 1e12).toFixed(2) + "T";
+    if (a >= 1e9) return neg + "USD " + (a / 1e9).toFixed(2) + "B";
+    if (a >= 1e6) return neg + "USD " + (a / 1e6).toFixed(2) + "M";
+    if (a >= 1e3) return neg + "USD " + (a / 1e3).toFixed(1) + "K";
+    return neg + "USD " + a.toFixed(2);
+  }
+
+  function renderYears(res) {
+    var ys = res.years;
+    var rows = "";
+    for (var i = 0; i < ys.length; i++) {
+      var Y = ys[i];
+      rows += "<tr>" +
+        "<td>Year " + Y.year + "</td>" +
+        "<td>" + fmtCount(Y.end) + "</td>" +
+        "<td>" + fmtCount(Y.avg) + "</td>" +
+        "<td>" + fmtCount(Y.optOuts) + "</td>" +
+        "<td>" + fmtCount(Y.joins) + "</td>" +
+        "<td>" + fmtCount(Y.orders) + "</td>" +
+        "<td>" + Y.avgRate.toFixed(3) + "</td>" +
+        "<td>" + fmtUSD(Y.inflow) + "</td>" +
+        "<td>" + fmtUSD(Y.subs) + "</td>" +
+        "<td>" + fmtUSD(Y.lead) + "</td>" +
+        "<td>" + fmtUSD(Y.kept) + "</td>" +
+        "<td>" + fmtUSD(Y.qc) + "</td>" +
+        "<td>USD " + Y.sellerNetPerVendorYear.toFixed(2) + "</td>" +
+        "</tr>";
+    }
+    document.getElementById("yearRows").innerHTML = rows;
+
+    var totKept = sumKey(ys, "kept");
+    var totSubs = sumKey(ys, "subs");
+    var totLead = sumKey(ys, "lead");
+    document.getElementById("sumKept").textContent = fmtUSD(totKept);
+    document.getElementById("sumSubs").textContent = fmtUSD(totSubs);
+    document.getElementById("sumLead").textContent = fmtUSD(totLead);
+    var last = res.months[res.months.length - 1];
+    document.getElementById("sumY10Orders").textContent = fmtCount(last.orders) + " / month";
+  }
+
+  function renderMonths(months) {
+    var rows = "";
+    for (var i = 0; i < months.length; i++) {
+      var m = months[i];
+      var cls = (m.month % 12 === 1) ? ' class="yearstart"' : '';
+      rows += "<tr" + cls + ">" +
+        "<td>" + m.month + "</td><td>Y" + m.year + "</td>" +
+        "<td>" + fmtCount(m.active) + "</td>" +
+        "<td>" + fmtCount(m.orders) + "</td>" +
+        "<td>" + m.rate.toFixed(3) + "</td>" +
+        "<td>" + fmtUSD(m.inflow) + "</td>" +
+        "<td>" + fmtUSD(m.kept) + "</td>" +
+        "<td>USD " + m.sellerNetPerVendor.toFixed(2) + "</td>" +
+        "</tr>";
+    }
+    document.getElementById("monthRows").innerHTML = rows;
+  }
+
+  var PHASES = [
+    {
+      name: "1. Catalogue and RTB",
+      intro: "Free catalogue sync and Ghost Mode monitoring run for every connected vendor. RTB bids turn high-intent shoppers into buyers. Each buyer who starts a purchase is one intent. The RTB cost is paid by the seller.",
+      kpis: function (Ys) { return [["Intents, all years", fmtCount(sumKey(Ys, "intents"))], ["Intent value, all years", fmtUSD(sumKey(Ys, "lockValue"))]]; },
+      cols: [
+        ["Year", function (Y) { return "Y" + Y.year; }],
+        ["Year-end vendors", function (Y) { return fmtCount(Y.end); }],
+        ["Intents", function (Y) { return fmtCount(Y.intents); }],
+        ["Intent value", function (Y) { return fmtUSD(Y.lockValue); }]
+      ]
+    },
+    {
+      name: "2. Paywall",
+      intro: "Each intent triggers a flash alert asking the seller to pay the USD 100 annual subscription. Subscription income is prorated monthly for active vendors.",
+      kpis: function (Ys) { return [["Paywall alerts, all years", fmtCount(sumKey(Ys, "intents"))], ["Subscription income, all years", fmtUSD(sumKey(Ys, "subs"))], ["Opt-outs, all years", fmtCount(sumKey(Ys, "optOuts"))]]; },
+      cols: [
+        ["Year", function (Y) { return "Y" + Y.year; }],
+        ["Opt-outs", function (Y) { return fmtCount(Y.optOuts); }],
+        ["New joins", function (Y) { return fmtCount(Y.joins); }],
+        ["Paywall alerts", function (Y) { return fmtCount(Y.intents); }],
+        ["Subscriptions", function (Y) { return fmtUSD(Y.subs); }]
+      ]
+    },
+    {
+      name: "3. Escrow and prepayment",
+      intro: "Each order that clears the paywall locks the buyer's USD 300 in escrow. The seller prepays the 3PQC and logistics cost before shipping to the inspection hub. Escrow balance is approximate.",
+      kpis: function (Ys) { return [["Escrow locked, all years", fmtUSD(sumKey(Ys, "lockValue"))], ["Seller prepayments, all years", fmtUSD(sumKey(Ys, "prepayments"))]]; },
+      cols: [
+        ["Year", function (Y) { return "Y" + Y.year; }],
+        ["Escrow locked", function (Y) { return fmtUSD(Y.lockValue); }],
+        ["Seller prepayments", function (Y) { return fmtUSD(Y.prepayments); }],
+        ["Escrow balance, approx.", function (Y) { return fmtUSD(Y.escrowBalance); }]
+      ]
+    },
+    {
+      name: "4. Inspection gate",
+      intro: "SGS inspects each item on arrival and charges the seller USD 15 per new product. Passed items move on. Failed items are refunded from escrow, and the platform earns nothing on them.",
+      kpis: function (Ys) { return [["Passed, all years", fmtCount(sumKey(Ys, "orders"))], ["Failed, all years", fmtCount(sumKey(Ys, "failed"))], ["QC paid to SGS, all years", fmtUSD(sumKey(Ys, "qc"))]]; },
+      cols: [
+        ["Year", function (Y) { return "Y" + Y.year; }],
+        ["Inspected", function (Y) { return fmtCount(Y.intents); }],
+        ["Passed", function (Y) { return fmtCount(Y.orders); }],
+        ["Failed", function (Y) { return fmtCount(Y.failed); }],
+        ["Refunds", function (Y) { return fmtUSD(Y.refunds); }],
+        ["QC paid to SGS", function (Y) { return fmtUSD(Y.qc); }]
+      ]
+    },
+    {
+      name: "5. Delivery and sign-off",
+      intro: "Passed items ship to the buyer. The buyer signs a Buyer Satisfaction Certificate, or after 72 hours with no dispute the system records deemed satisfaction. Disputes hold settlement for review.",
+      kpis: function (Ys) { return [["Delivered, all years", fmtCount(sumKey(Ys, "orders"))], ["Signed BSC, all years", fmtCount(sumKey(Ys, "bscCount"))], ["Disputed, all years", fmtCount(sumKey(Ys, "disputed"))]]; },
+      cols: [
+        ["Year", function (Y) { return "Y" + Y.year; }],
+        ["Delivered", function (Y) { return fmtCount(Y.orders); }],
+        ["Signed BSC", function (Y) { return fmtCount(Y.bscCount); }],
+        ["Deemed", function (Y) { return fmtCount(Y.deemed); }],
+        ["Disputed", function (Y) { return fmtCount(Y.disputed); }]
+      ]
+    },
+    {
+      name: "6. Day-16 settlement",
+      intro: "On Day 16, the platform takes the USD 66 lead fee and USD 6 commission on each settled order, and the seller receives USD 228. 20% of platform inflow is set aside for lead generation. Subscriptions are kept in full.",
+      kpis: function (Ys) { return [["Kept by platform, all years", fmtUSD(sumKey(Ys, "kept"))], ["Lead generation, all years", fmtUSD(sumKey(Ys, "lead"))], ["Seller payouts, all years", fmtUSD(sumKey(Ys, "sellerPayout"))]]; },
+      cols: [
+        ["Year", function (Y) { return "Y" + Y.year; }],
+        ["Orders settled", function (Y) { return fmtCount(Y.orders); }],
+        ["Order inflow", function (Y) { return fmtUSD(Y.inflow); }],
+        ["Lead generation", function (Y) { return fmtUSD(Y.lead); }],
+        ["Subscriptions", function (Y) { return fmtUSD(Y.subs); }],
+        ["Kept by platform", function (Y) { return fmtUSD(Y.kept); }],
+        ["Seller payout", function (Y) { return fmtUSD(Y.sellerPayout); }]
+      ]
+    }
+  ];
+
+  var selectedPhase = 0;
+  var lastYears = [];
+
+  function renderPhases(Ys) {
+    lastYears = Ys;
+    var tabs = document.getElementById("ptabs");
+    tabs.innerHTML = "";
+    for (var i = 0; i < PHASES.length; i++) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "tab";
+      b.setAttribute("role", "tab");
+      b.setAttribute("aria-selected", i === selectedPhase ? "true" : "false");
+      b.textContent = PHASES[i].name;
+      b.setAttribute("data-idx", String(i));
+      b.addEventListener("click", function (e) {
+        selectedPhase = parseInt(e.currentTarget.getAttribute("data-idx"), 10);
+        renderPhases(lastYears);
+      });
+      tabs.appendChild(b);
+    }
+
+    var ph = PHASES[selectedPhase];
+    document.getElementById("ptitle").textContent = ph.name;
+    document.getElementById("pintro").textContent = ph.intro;
+
+    var kp = ph.kpis(Ys), kh = "";
+    for (var k = 0; k < kp.length; k++) {
+      kh += '<div class="stat"><div class="label">' + kp[k][0] + '</div><div class="value">' + kp[k][1] + '</div></div>';
+    }
+    document.getElementById("pkpis").innerHTML = kh;
+
+    var head = "";
+    for (var h = 0; h < ph.cols.length; h++) head += "<th>" + ph.cols[h][0] + "</th>";
+    document.getElementById("phead").innerHTML = head;
+
+    var rows = "";
+    for (var i2 = 0; i2 < Ys.length; i2++) {
+      rows += "<tr>";
+      for (var c = 0; c < ph.cols.length; c++) rows += "<td>" + ph.cols[c][1](Ys[i2]) + "</td>";
+      rows += "</tr>";
+    }
+    document.getElementById("pbody").innerHTML = rows;
+  }
+
+  function update() {
+    var p = readInputs();
+    var res = compute(p);
+    renderYears(res);
+    renderMonths(res.months);
+    renderPhases(res.years);
+  }
+
+  function setBase() {
+    buildYearFields(BASE.vendors);
+    for (var i = 0; i < NUMERIC_IDS.length; i++) document.getElementById(NUMERIC_IDS[i]).value = BASE[NUMERIC_IDS[i]];
+    document.getElementById("applyToSubs").checked = BASE.applyToSubs;
+    update();
+  }
+
+  for (var n = 0; n < NUMERIC_IDS.length; n++) {
+    document.getElementById(NUMERIC_IDS[n]).addEventListener("input", update);
+  }
+  document.getElementById("applyToSubs").addEventListener("change", update);
+  document.getElementById("resetBtn").addEventListener("click", setBase);
+
+  setBase();
+})();
+</script>
+</body>
+</html>
